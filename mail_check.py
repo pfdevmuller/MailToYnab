@@ -1,6 +1,7 @@
 import os
 import poplib
 import email
+from discovery_za_parser import DiscoveryZaParser
 
 def get_config(path):
     config = {}
@@ -44,9 +45,12 @@ def list_inbox(inbox):
 def extract_text(parsed_email):
     for part in parsed_email.walk():
         type = part.get_content_type()
+        # Right now, just returns the first text part, which works fine for the current email format
         if type == "text/plain":
+            text = part.get_payload(decode=True)
             print("\nFound plain text:")
-            print(part.get_payload(decode=True))
+            print(text)
+            return text
 
 home = os.getenv("HOME")
 config_path = home +'/.mail_to_ynab'
@@ -58,5 +62,11 @@ inbox = get_pop_client(config)
 print("Connected, I think")
 msgs = list_inbox(inbox)
 
+parser = DiscoveryZaParser()
 for msg in msgs:
-    extract_text(msg)
+    text = extract_text(msg)
+    if parser.looks_like_notification(text):
+        print("Looks like a notification")
+        parser.get_transaction(text)
+    else:
+        print("Not what we are looking for")
