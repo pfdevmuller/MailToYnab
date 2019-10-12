@@ -2,6 +2,7 @@ import os
 import poplib
 import email
 from discovery_za_parser import DiscoveryZaParser
+from ynab_client import YnabClient
 
 def get_config(path):
     config = {}
@@ -57,6 +58,14 @@ config_path = home +'/.mail_to_ynab'
 
 config = get_config(config_path)
 print(f"Config: {config}")
+
+api_key = config['ynab_api_key']
+budget_id = config['ynab_budget']
+account_id = config['ynab_account']
+
+
+ynab = YnabClient(api_key, budget_id, account_id)
+ynab.test_ynab()
 
 inbox = get_pop_client(config)
 print("Connected, I think")
