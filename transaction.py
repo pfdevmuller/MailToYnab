@@ -10,7 +10,8 @@ class Transaction:
         self.vendor = vendor
         self.amount = amount
 
+    def ynab_date(self):
+        return self.date.strftime("%Y-%m-%d")
 
     def __str__(self):
-        pretty_date = self.date.strftime("%Y-%m-%d")
-        return f"Transaction: date: {pretty_date}, vendor: {self.vendor}, amount: {self.amount}"
+        return f"Transaction: date: {self.ynab_date()}, vendor: {self.vendor}, amount: {self.amount}"

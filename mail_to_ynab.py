@@ -23,15 +23,16 @@ class MailToYnab:
         self.parser = DiscoveryZaParser()
 
     def run(self):
-        self.ynab.test_ynab()
-
-        msgs = self.mail.list_inbox()
-
-        for msg in msgs:
+        for msg in self.mail.list_inbox():
             text = self.mail.extract_text(msg)
             if self.parser.looks_like_notification(text):
                 print("Looks like a notification")
-                self.parser.get_transaction(text)
+                transaction = self.parser.get_transaction(text)
+                isKnown = self.ynab.isExisting(transaction)
+                if (isKnown):
+                    print("This transaction is known")
+                else:
+                    print("This transaction is new!")
             else:
                 print("Not what we are looking for")
 
