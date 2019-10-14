@@ -33,6 +33,7 @@ class MailToYnab:
                     print("This transaction is known")
                 else:
                     print("This transaction is new!")
+                    self.ynab.uploadTransaction(transaction)
             else:
                 print("Not what we are looking for")
 
