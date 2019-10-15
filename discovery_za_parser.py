@@ -19,7 +19,7 @@ class DiscoveryZaParser:
         date_str = fields["year"] + " " + fields["date"]
         date = datetime.strptime(date_str, "%Y %d%b %H:%M")
         print(f"Fields extracted from mail: {fields}")
-        t = Transaction(date, vendor, amount)
+        t = Transaction(date, vendor, -amount)
         print(f"Transaction is: {t}")
         return t
 
