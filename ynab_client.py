@@ -40,9 +40,11 @@ class YnabClient:
         t = transaction
         yt = ynab_transaction
         print(f"Comparing {t} with {yt}")
-        # TODO fetch payee using payee id and match it to vendor
-        return (t.ynab_date() == yt["date"] and
-                t.amount == yt["amount"] and
-                t.vendor == yt["payee_name"])
+        # Vendor names from statement are more complete than from notifications, so we need to be a little lenient
+        isVendorSamey = (t.vendor.lower() in yt["payee_name"].lower()) or (yt["payee_name"].lower() in t.vendor.lower())
+        isDateSame = t.ynab_date() == yt["date"]
+        isAmountSame = t.amount == yt["amount"]
+        print(f"Comparison result, the same: date:{isDateSame}, amount:{isAmountSame}, vendor:{isVendorSamey}")
+        return isDateSame and isAmountSame and isVendorSamey
 
 # import code; code.interact(local=dict(globals(), **locals()))
