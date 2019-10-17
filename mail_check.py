@@ -38,3 +38,4 @@ class MailChecker:
                 print("\nFound plain text:")
                 print(text)
                 return text
+

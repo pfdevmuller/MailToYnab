@@ -27,7 +27,8 @@ class MailToYnab:
             text = self.mail.extract_text(msg)
             if self.parser.looks_like_notification(text):
                 print("Looks like a notification")
-                transaction = self.parser.get_transaction(text)
+                msg_date = msg["Date"]
+                transaction = self.parser.get_transaction(text, msg_date)
                 isKnown = self.ynab.isExisting(transaction)
                 if (isKnown):
                     print("This transaction is known")
@@ -55,3 +56,5 @@ if __name__ == "__main__":
     config_path = home +'/.mail_to_ynab'
     mty = MailToYnab(config_path)
     mty.run()
+
+# import code; code.interact(local=dict(globals(), **locals()))
