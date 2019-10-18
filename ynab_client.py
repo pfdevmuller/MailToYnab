@@ -47,4 +47,8 @@ class YnabClient:
         print(f"Comparison result, the same: date:{isDateSame}, amount:{isAmountSame}, vendor:{isVendorSamey}")
         return isDateSame and isAmountSame and isVendorSamey
 
+    def test_connection(self):
+        budgets = ynab.BudgetsApi().get_budgets()
+        print(f"Call made, result is: {budgets}")
+
 # import code; code.interact(local=dict(globals(), **locals()))

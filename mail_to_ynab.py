@@ -1,3 +1,4 @@
+import sys
 import os
 from ynab_client import YnabClient
 from mail_check import MailChecker
@@ -38,6 +39,10 @@ class MailToYnab:
             else:
                 print("Not what we are looking for")
 
+    def test_ynab(self):
+        print("Testing ynab")
+        self.ynab.test_connection()
+
     def get_config(self, path):
         config = {}
         f= open(path,'r')
@@ -55,6 +60,10 @@ if __name__ == "__main__":
     home = os.getenv("HOME")
     config_path = home +'/.mail_to_ynab'
     mty = MailToYnab(config_path)
-    mty.run()
+    print(f"sys.argv: {sys.argv}")
+    if ("test-ynab" in sys.argv):
+        mty.test_ynab()
+    else:
+        mty.run()
 
 # import code; code.interact(local=dict(globals(), **locals()))
