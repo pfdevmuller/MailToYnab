@@ -7,7 +7,10 @@ from discovery_za_parser import DiscoveryZaParser
 
 class MailToYnab:
 
-    def __init__(self, config_path):
+    def __init__(self, config_path, dryrun = False):
+        self.dryrun = dryrun
+        if self.dryrun:
+            print("DRYRUN: No changes to YNAB or email will be made.")
         self.config = self.get_config(config_path)
         print(f"Config: {self.config}")
 
@@ -35,10 +38,16 @@ class MailToYnab:
                 isKnown = self.ynab.isExisting(transaction)
                 if (isKnown):
                     print("This transaction is known")
-                    inbox_scan.delete_current()
+                    if self.dryrun:
+                        print("DRYRUN: no email delete")
+                    else:
+                        inbox_scan.delete_current()
                 else:
                     print("This transaction is new!")
-                    self.ynab.uploadTransaction(transaction)
+                    if self.dryrun:
+                        print("DRYRUN: no transaction upload")
+                    else:
+                        self.ynab.uploadTransaction(transaction)
             else:
                 print("Not what we are looking for")
         inbox_scan.close() # This commits any deletes we marked above
@@ -63,7 +72,8 @@ class MailToYnab:
 if __name__ == "__main__":
     home = os.getenv("HOME")
     config_path = home +'/.mail_to_ynab'
-    mty = MailToYnab(config_path)
+    dryrun = "dryrun" in sys.argv
+    mty = MailToYnab(config_path, dryrun)
     print(f"sys.argv: {sys.argv}")
     if ("test-ynab" in sys.argv):
         mty.test_ynab()
