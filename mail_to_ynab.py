@@ -1,6 +1,7 @@
 import sys
 import os
 from ynab_client import YnabClient
+from mail_check import InboxScan
 from mail_check import MailChecker
 from discovery_za_parser import DiscoveryZaParser
 
@@ -24,7 +25,8 @@ class MailToYnab:
         self.parser = DiscoveryZaParser()
 
     def run(self):
-        for msg in self.mail.list_inbox():
+        inbox_scan = self.mail.start_inbox_scan()
+        for msg in inbox_scan.messages():
             text = self.mail.extract_text(msg)
             if self.parser.looks_like_notification(text):
                 print("Looks like a notification")
@@ -33,11 +35,13 @@ class MailToYnab:
                 isKnown = self.ynab.isExisting(transaction)
                 if (isKnown):
                     print("This transaction is known")
+                    inbox_scan.delete_current()
                 else:
                     print("This transaction is new!")
                     self.ynab.uploadTransaction(transaction)
             else:
                 print("Not what we are looking for")
+        inbox_scan.close() # This commits any deletes we marked above
 
     def test_ynab(self):
         print("Testing ynab")

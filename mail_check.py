@@ -1,6 +1,33 @@
 import poplib
 import email
 
+# Goes over the inbox. Tracks position and can close the connection.
+class InboxScan:
+
+    # popclient: should already be connected
+    def __init__(self, popclient):
+        self.inbox = popclient
+        self.msg_count, self.inbox_size = self.inbox.stat()
+        print(f"Found {self.msg_count} messages on pop server")
+        self.index = 1
+
+    def messages(self):
+        while self.index <= self.msg_count:
+            print(f"\n\nFetching message {self.index}")
+            msg = self.inbox.retr(self.index)
+            raw_email = b"\n".join(msg[1])
+            parsed_email = email.message_from_bytes(raw_email)
+            yield parsed_email
+            self.index += 1
+
+    # Marks the current message for deletion
+    def delete_current(self):
+        print(f"Marking message {self.index} for deletion.")
+        self.inbox.dele(self.index)
+
+    def close(self):
+        self.inbox.quit()
+
 class MailChecker:
 
     def __init__(self, server, port, username, password):
@@ -8,13 +35,6 @@ class MailChecker:
         self.port = port
         self.username = username
         self.password = password
-        self.inbox = None
-
-    def get_inbox(self):
-        if (self.inbox is None):
-            self.inbox = self.get_pop_client(self.server, self.port, self.username, self.password)
-            print("Connected, I think")
-        return self.inbox
 
     def get_pop_client(self, server, port, username, password):
         print(f"Server {server}, Port {port}")
@@ -23,20 +43,10 @@ class MailChecker:
         popclient.pass_(password)
         return popclient
 
-    # Returns a list of parsed emails
-    def list_inbox(self):
-        msg_count, inbox_size = self.get_inbox().stat()
-        print(f"Found {msg_count} messages")
-        if msg_count < 1:
-            return []
-        msgs = []
-        for i in range(1,msg_count+1):
-            print(f"Fetching message {i}")
-            msg = self.get_inbox().retr(i)
-            raw_email = b"\n".join(msg[1])
-            parsed_email = email.message_from_bytes(raw_email)
-            msgs.append(parsed_email)
-        return msgs
+    def start_inbox_scan(self):
+        inbox = self.get_pop_client(self.server, self.port, self.username, self.password)
+        print("Connected, I think")
+        return InboxScan(inbox)
 
     def extract_text(self, parsed_email):
         for part in parsed_email.walk():
