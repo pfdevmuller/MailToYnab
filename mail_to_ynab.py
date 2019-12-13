@@ -28,6 +28,9 @@ class MailToYnab:
         self.parser = DiscoveryBankZaParser()
 
     def run(self):
+        upload_count = 0
+        delete_count = 0
+        unparsed_count = 0
         inbox_scan = self.mail.start_inbox_scan()
         for msg in inbox_scan.messages():
             text = self.mail.extract_text(msg)
@@ -42,15 +45,19 @@ class MailToYnab:
                         print("DRYRUN: no email delete")
                     else:
                         inbox_scan.delete_current()
+                        delete_count += 1
                 else:
                     print("This transaction is new!")
                     if self.dryrun:
                         print("DRYRUN: no transaction upload")
                     else:
                         self.ynab.uploadTransaction(transaction)
+                        upload_count += 1
             else:
                 print("Not what we are looking for")
+                unparsed_count += 1
         inbox_scan.close() # This commits any deletes we marked above
+        print(f"Uploaded {upload_count} transactions. Deleted {delete_count} emails. Left {unparsed_count} emails unparsed because they did not match the parser.")
 
     def test_ynab(self):
         print("Testing ynab")
