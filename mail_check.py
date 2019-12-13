@@ -49,12 +49,21 @@ class MailChecker:
         return InboxScan(inbox)
 
     def extract_text(self, parsed_email):
+        # Try to find plain text first:
         for part in parsed_email.walk():
             type = part.get_content_type()
-            # Right now, just returns the first text part, which works fine for the current email format
             if type == "text/plain":
                 text = part.get_payload(decode=True)
                 print("\nFound plain text:")
                 print(text)
                 return text
+        # Otherwise, look for text/html
+        for part in parsed_email.walk():
+            type = part.get_content_type()
+            if type == "text/html":
+                text = part.get_payload(decode=True)
+                print("\nFound html text:")
+                print(text)
+                return text
+        raise "Could not find an understandable part in parsed email."
 
