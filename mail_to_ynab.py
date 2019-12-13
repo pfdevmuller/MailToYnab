@@ -3,7 +3,7 @@ import os
 from ynab_client import YnabClient
 from mail_check import InboxScan
 from mail_check import MailChecker
-from discovery_za_parser import DiscoveryZaParser
+from discovery_bank_za_parser import DiscoveryBankZaParser
 
 class MailToYnab:
 
@@ -25,7 +25,7 @@ class MailToYnab:
         password = self.config['password']
         self.mail = MailChecker(server, port, username, password)
 
-        self.parser = DiscoveryZaParser()
+        self.parser = DiscoveryBankZaParser()
 
     def run(self):
         inbox_scan = self.mail.start_inbox_scan()
