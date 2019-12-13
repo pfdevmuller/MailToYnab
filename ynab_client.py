@@ -39,12 +39,12 @@ class YnabClient:
     def looks_like(self, transaction, ynab_transaction):
         t = transaction
         yt = ynab_transaction
-        print(f"Comparing {t} with {yt}")
+        # print(f"Comparing {t} with {yt}")
         # Vendor names from statement are more complete than from notifications, so we need to be a little lenient
         isVendorSamey = (t.vendor.lower() in yt["payee_name"].lower()) or (yt["payee_name"].lower() in t.vendor.lower())
         isDateSame = t.ynab_date() == yt["date"]
         isAmountSame = t.amount == yt["amount"]
-        print(f"Comparison result, the same: date:{isDateSame}, amount:{isAmountSame}, vendor:{isVendorSamey}")
+        # print(f"Comparison result, the same: date:{isDateSame}, amount:{isAmountSame}, vendor:{isVendorSamey}")
         return isDateSame and isAmountSame and isVendorSamey
 
     def test_connection(self):

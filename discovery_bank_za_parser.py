@@ -17,32 +17,51 @@ class DiscoveryBankZaParser:
 
     def get_transaction(self, text, message_date):
         fields = self.extract_groups(text)
-        amount = int(round(float(fields["amount"]) * 1000))
+        amount = int(round(float(fields["amount"]) * 1000)) * fields["amount_sign"]
         vendor = fields["vendor"]
         year = DateParser.parse(message_date).year
         date_str = str(year) + " " + fields["date"]
         date = datetime.strptime(date_str, "%Y %d %b %H:%M")
         print(f"Fields extracted from mail: {fields}")
-        t = Transaction(date, vendor, -amount)
+        t = Transaction(date, vendor, amount)
         print(f"Transaction is: {t}")
         return t
 
     def extract_groups(self, text):
         # Sample:
         # b'Discovery Bank: R5.00 reserved on card ***1234 at Vendor Name. 01 Dec 09:21. Available balance: R1234.56. For more info, call 0860112265.<!doctype html>\n<html>\n    <head><meta charset="UTF-8">\n        <title>Disclaimer</title>\n    </head>\n    <body>\n        <table align="center" bgcolor="#ffffff" cellpadding="0" cellspacing="0" width="600">\n                <tr>\n                    <td align="left" style="font-family: calibri, Arial, sans-serif; color: #292b2c; font-size: 8px; padding-top: 10px; padding-bottom: 10px;">Discovery Bank Ltd. Registration no 2015/408745/06. An authorised financial services and registered credit provider. FSP no 48657. NCR registration no NCRCP9997. Limits, Ts &amp; Cs apply. See full disclaimer here.</td>\n                </tr>\n        </table>\n    </body>\n</html>\n'
+
         # This is the section you care about:
         # Discovery Bank: R5.00 reserved on card ***1234 at Vendor Name. 01 Dec 09:21. Available balance: R1234.56. For more info, call 0860112265.
-        pattern = "Discovery Bank: R(\d+\.\d+) reserved on card.*?(\d+) at (.+?)\. (\d\d \w\w\w \d\d:\d\d)\. Available balance"
+        pattern_reserved = "Discovery Bank: R(\d+\.\d+) reserved on card.*?(\d+) at (.+?)\. (\d\d \w\w\w \d\d:\d\d)\. Available balance"
+
+        # The phrase "reserved on card" can also be:
+        #
+        # "reversed on card" -> implies inversion of amount
+        # Example:
+        # Discovery Bank: R8.00 reversed on card ***1234 at GOOGLE *TEMPORARY HOLD 05\nDec 20:28. Available balance: R1234.56. For more info, call 0860112265.
+        pattern_reversed = "Discovery Bank: R(\d+\.\d+) reversed on card.*?(\d+) at (.+?) (\d\d \w\w\w \d\d:\d\d)\. Available balance"
+
+        # Or:
+        # "paid to account" -> implies inversion of amount
+        # Example:
+        # Discovery Bank: R96.94 paid to account ***1234. Ref: "Some Vendor". 08 Dec 15:39. Available balance: R1234.56. For more info,\ncall 0860112265.
+        pattern_paid = "Discovery Bank: R(\d+\.\d+) paid to account.*?(\d+). Ref: \"(.+?)\". (\d\d \w\w\w \d\d:\d\d)\. Available balance"
+
+        patterns = [pattern_reserved, pattern_reversed, pattern_paid]
+        amount_signs = [-1, 1, 1]
 
         # TODO assumption about encoding
         text = str(text, 'utf-8').replace('\n', ' ')
-        result = re.search(pattern, text)
-        if result:
-            groups = {
-                "amount" : result.groups()[0],
-                "account" : result.groups()[1], # TODO: actually the last four digits of the card, not the account
-                "vendor" : result.groups()[2],
-                "date" : result.groups()[3]}
-            return groups
-        else:
-            return None
+
+        for pattern, sign in zip(patterns, amount_signs):
+            result = re.search(pattern, text)
+            if result:
+                groups = {
+                    "amount" : result.groups()[0],
+                    "amount_sign" : sign,
+                    "account" : result.groups()[1], # TODO: actually sometimes the last four digits of the card, not the account
+                    "vendor" : result.groups()[2],
+                    "date" : result.groups()[3]}
+                return groups
+        return None
