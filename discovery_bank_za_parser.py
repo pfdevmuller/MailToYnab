@@ -52,7 +52,7 @@ class DiscoveryBankZaParser:
         amount_signs = [-1, 1, 1]
 
         # TODO assumption about encoding
-        text = str(text, 'utf-8').replace('\n', ' ')
+        text = str(text, 'utf-8').replace('\r\n', ' ')
 
         for pattern, sign in zip(patterns, amount_signs):
             result = re.search(pattern, text)
