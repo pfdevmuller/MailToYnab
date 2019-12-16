@@ -87,4 +87,9 @@ if __name__ == "__main__":
     else:
         mty.run()
 
+def lambda_handler(event, context):
+    print("This is actual Mail To Ynab")
+    return {'message' : 'completed - mail to ynab'}
+
 # import code; code.interact(local=dict(globals(), **locals()))
+
