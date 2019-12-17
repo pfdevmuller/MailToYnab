@@ -13,7 +13,6 @@ class MailToYnab:
         if self.dryrun:
             print("DRYRUN: No changes to YNAB or email will be made.")
         self.config = config
-        print(f"Config: {self.config}")
 
         api_key = self.config['ynab_api_key']
         budget_id = self.config['ynab_budget']
