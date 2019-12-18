@@ -1,6 +1,7 @@
 from imapclient import IMAPClient
 import email
 
+
 # Goes over the inbox. Tracks position and can close the connection.
 class InboxScan:
 
@@ -16,11 +17,11 @@ class InboxScan:
         messages = self.inbox.search()
         print(f"messages: {messages}")
         for uid, message_data in self.inbox.fetch(messages, 'RFC822').items():
-            #print(f"Message Data: {message_data}")
+            # print(f"Message Data: {message_data}")
             raw_email = message_data[b'RFC822']
-            #print(f"Raw Email: {raw_email}")
+            # print(f"Raw Email: {raw_email}")
             parsed_email = email.message_from_bytes(raw_email)
-            #print(f"Parsed: {parsed_email}")
+            # print(f"Parsed: {parsed_email}")
             self.current = uid
             yield parsed_email
 
@@ -31,6 +32,7 @@ class InboxScan:
     def close(self):
         self.inbox.expunge()
         self.inbox.logout()
+
 
 class MailChecker:
 
@@ -47,7 +49,8 @@ class MailChecker:
         return server
 
     def start_inbox_scan(self):
-        inbox = self.get_client(self.server, self.port, self.username, self.password)
+        inbox = self.get_client(self.server, self.port,
+                                self.username, self.password)
         print("Connected, I think")
         return InboxScan(inbox)
 
@@ -69,4 +72,3 @@ class MailChecker:
                 print(text)
                 return text
         raise "Could not find an understandable part in parsed email."
-
