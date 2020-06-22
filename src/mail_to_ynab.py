@@ -25,7 +25,8 @@ class MailToYnab:
         password = self.config['password']
         self.mail = MailChecker(server, port, username, password)
 
-        self.parser = DiscoveryBankZaParser()
+        # First parser to successfully extract a notification will be used
+        self.parsers = [DiscoveryBankZaParser()]
 
     def run(self):
         upload_count = 0
@@ -33,33 +34,39 @@ class MailToYnab:
         unparsed_count = 0
         inbox_scan = self.mail.start_inbox_scan()
         for msg in inbox_scan.messages():
+            parsed = False
             text = self.mail.extract_text(msg)
-            if self.parser.looks_like_notification(text):
-                print("Looks like a notification")
-                msg_date = msg["Date"]
-                transaction = self.parser.get_transaction(text, msg_date)
-                isKnown = self.ynab.isExisting(transaction)
-                if (isKnown):
-                    print("This transaction is known")
-                    if self.dryrun:
-                        print("DRYRUN: no email delete")
+            for parser in self.parsers:
+                if parsed:
+                    # Only the first successful parser should be used
+                    break
+                if parser.looks_like_notification(text):
+                    parsed = True
+                    print("Looks like a notification")
+                    msg_date = msg["Date"]
+                    transaction = parser.get_transaction(text, msg_date)
+                    isKnown = self.ynab.isExisting(transaction)
+                    if (isKnown):
+                        print("This transaction is known")
+                        if self.dryrun:
+                            print("DRYRUN: no email delete")
+                        else:
+                            inbox_scan.delete_current()
+                            delete_count += 1
                     else:
-                        inbox_scan.delete_current()
-                        delete_count += 1
-                else:
-                    print("This transaction is new!")
-                    if self.dryrun:
-                        print("DRYRUN: no transaction upload")
-                    else:
-                        self.ynab.uploadTransaction(transaction)
-                        upload_count += 1
-            else:
+                        print("This transaction is new!")
+                        if self.dryrun:
+                            print("DRYRUN: no transaction upload")
+                        else:
+                            self.ynab.uploadTransaction(transaction)
+                            upload_count += 1
+            if not parsed:
                 print("Not what we are looking for")
                 unparsed_count += 1
         inbox_scan.close()  # This commits any deletes we marked above
         msg = (f"Uploaded {upload_count} transactions. Deleted {delete_count}"
                f" emails. Left {unparsed_count} emails unparsed because they"
-               f"did not match the parser.")
+               f" did not match the parsers.")
         print(msg)
         return msg
 
@@ -72,10 +79,10 @@ def get_config_from_file(path):
     config = {}
     f = open(path, 'r')
     lines = f.readlines()
-    for l in lines:
-        if l[0] == '#':
+    for line in lines:
+        if line[0] == '#':
             continue
-        tokens = l.split(':')
+        tokens = line.split(':')
         if len(tokens) != 2:
             raise "Expected config lines to contain exactly two fields"
         key = tokens[0].strip()
