@@ -1,6 +1,8 @@
 import sys
 import os
 import json
+
+from account_matcher import ConstantAccountMatcher
 from ynab_client import YnabClient
 from mail_check import MailChecker
 from discovery_bank_za_parser import DiscoveryBankZaParser
@@ -27,7 +29,8 @@ class MailToYnab:
         self.mail = MailChecker(server, port, username, password)
 
         # First parser to successfully extract a notification will be used
-        self.parsers = [DiscoveryBankZaParser(account_id), InvestecZaParser(account_id)]
+        self.parsers = [DiscoveryBankZaParser(account_id, ConstantAccountMatcher(True)),
+                        InvestecZaParser(account_id, ConstantAccountMatcher(True))]
 
     def run(self):
         upload_count = 0

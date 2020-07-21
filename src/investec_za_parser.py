@@ -5,24 +5,26 @@ from transaction import Transaction
 
 # Notification parser for Purchase Notifications from the
 # Investec Bank in South Africa
-class InvestecZaParser:
+class InvestecZaParser(object):
 
-    def __init__(self, account):
+    def __init__(self, account, account_matcher):
         self.account = account
+        self.account_matcher = account_matcher
 
     def get_transaction(self, text, message_date):
         fields = self.extract_groups(text)
         if fields:
-            amount = (int(round(float(fields["amount"]) * 1000))
-                      * fields["amount_sign"])
-            vendor = fields["vendor"]
-            date = datetime.strptime(fields["date"], "%d/%m/%Y")
-            print(f"Fields extracted from mail: {fields}")
-            t = Transaction(date, vendor, amount, self.account)
-            print(f"Transaction is: {t}")
-            return t
-        else:
-            return None
+            if self.account_matcher.matches(fields["card_suffix"]):
+                amount = (int(round(float(fields["amount"]) * 1000))
+                          * fields["amount_sign"])
+                vendor = fields["vendor"]
+                date = datetime.strptime(fields["date"], "%d/%m/%Y")
+                print(f"Fields extracted from mail: {fields}")
+                t = Transaction(date, vendor, amount, self.account)
+                print(f"Transaction is: {t}")
+                return t
+
+        return None
 
     def extract_groups(self, text):
         # Sample:
@@ -42,10 +44,9 @@ class InvestecZaParser:
                 groups = {
                     "amount": result.groups()[1],
                     "amount_sign": sign,
-                    # TODO: actually sometimes the last four digits of the
-                    # card, not the account
-                    "account": result.groups()[0],
+                    "card_suffix": result.groups()[0],
                     "vendor": result.groups()[2],
                     "date": result.groups()[3]}
                 return groups
         return None
+
