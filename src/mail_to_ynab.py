@@ -3,6 +3,7 @@ import os
 import json
 
 from account_matcher import ConstantAccountMatcher
+from config_provider import ConfigProvider
 from ynab_client import YnabClient
 from mail_check import MailChecker
 from discovery_bank_za_parser import DiscoveryBankZaParser
@@ -11,23 +12,17 @@ from investec_za_parser import InvestecZaParser
 
 class MailToYnab:
 
-    def __init__(self, cfg, dryrun=False):
+    def __init__(self, config, dryrun=False):
         self.dryrun = dryrun
         if self.dryrun:
             print("DRYRUN: No changes to YNAB or email will be made.")
-        self.config = cfg
+        self.config = config
 
-        api_key = self.config['ynab_api_key']
-        budget_id = self.config['ynab_budget']
-        account_id = self.config['ynab_account']
-        self.ynab = YnabClient(api_key, budget_id)
+        self.ynab = YnabClient(self.config.api_key(), self.config.budget_id())
 
-        server = self.config['server']
-        port = self.config['port']
-        username = self.config['username']
-        password = self.config['password']
-        self.mail = MailChecker(server, port, username, password)
+        self.mail = MailChecker(self.config.server(), self.config.port(), self.config.username(), self.config.password())
 
+        account_id = self.config.account()
         # First parser to successfully extract a notification will be used
         self.parsers = [DiscoveryBankZaParser(account_id, ConstantAccountMatcher(True)),
                         InvestecZaParser(account_id, ConstantAccountMatcher(True))]
@@ -79,7 +74,7 @@ class MailToYnab:
 
 
 def get_config_from_file(path):
-    cfg = {}
+    config = {}
     f = open(path, 'r')
     lines = f.readlines()
     for line in lines:
@@ -90,8 +85,8 @@ def get_config_from_file(path):
             raise Exception("Expected config lines to contain exactly two fields")
         key = tokens[0].strip()
         value = tokens[1].strip()
-        cfg[key] = value
-    return cfg
+        config[key] = value
+    return config
 
 
 def get_config_from_env():
@@ -107,7 +102,8 @@ def local_handler():
         print(json.dumps(structure))
         sys.exit()
     dryrun = "dryrun" in sys.argv
-    mty = MailToYnab(config, dryrun)
+    config_provider = ConfigProvider(config)
+    mty = MailToYnab(config_provider, dryrun)
     print(f"sys.argv: {sys.argv}")
     if "test-ynab" in sys.argv:
         mty.test_ynab()
@@ -119,7 +115,8 @@ def lambda_handler(event, context):
     print("This is actual Mail To Ynab")
     config = get_config_from_env()
     dryrun = False
-    mty = MailToYnab(config, dryrun)
+    config_provider = ConfigProvider(config)
+    mty = MailToYnab(config_provider, dryrun)
     result = mty.run()
     return {'message': result}
 
