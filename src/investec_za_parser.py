@@ -28,9 +28,8 @@ class InvestecZaParser:
     def extract_groups(self, text):
         # Sample:
         # b"A purchase has been authorised on your Investec card ending 1234 for\r\nZAR5.00 at MTC CENTRE on 21/06/2019. Your available balance is\r\nR6,809.39." # noqa
-        # TODO test this before modifying it for PEP8 compliance
-        # TODO correctly match the newlines (currently just matched with .*?)
-        pattern_authorised = "A purchase has been authorised on your Investec card ending (\d+) for.*?ZAR(\d+\.\d+) at (.+?) on (\d\d/\d\d/\d\d\d\d). Your available balance" # noqa
+        pattern_authorised = r'A purchase has been authorised on your Investec card ending (\d+) for.*?ZAR(\d+\.\d+) at (.+?) on ' \
+                             r'(\d\d/\d\d/\d\d\d\d). Your available balance '
 
         patterns = [pattern_authorised]
         amount_signs = [-1]
