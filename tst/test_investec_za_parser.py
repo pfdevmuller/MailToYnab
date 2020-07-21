@@ -7,7 +7,7 @@ from transaction import Transaction
 
 class TestInvestecZaParser(TestCase):
     def test_get_transaction(self):
-        text = b"A purchase has been authorised on your Investec card ending 1234 for\r\nZAR5.00 at MTC CENTRE on 21/06/2019. " \
+        text = b"A purchase has been authorised on your Investec card ending 1234 for\r\nZAR5.00 at MTC CENTRE on 21/06/2019.  " \
                b"Your available balance is\r\nR6,809.39. "
 
         parser = InvestecZaParser("account123")
