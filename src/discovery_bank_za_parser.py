@@ -11,6 +11,9 @@ from transaction import Transaction
 # Discovery Credit Card provider
 class DiscoveryBankZaParser:
 
+    def __init__(self, account):
+        self.account = account
+
     def looks_like_notification(self, text):
         if self.extract_groups(text):
             # TODO check if the account is as expected
@@ -27,7 +30,7 @@ class DiscoveryBankZaParser:
         date_str = str(year) + " " + fields["date"]
         date = datetime.strptime(date_str, "%Y %d %b %H:%M")
         print(f"Fields extracted from mail: {fields}")
-        t = Transaction(date, vendor, amount)
+        t = Transaction(date, vendor, amount, self.account)
         print(f"Transaction is: {t}")
         return t
 

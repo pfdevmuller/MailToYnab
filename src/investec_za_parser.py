@@ -7,6 +7,9 @@ from transaction import Transaction
 # Investec Bank in South Africa
 class InvestecZaParser:
 
+    def __init__(self, account):
+        self.account = account
+
     def looks_like_notification(self, text):
         if self.extract_groups(text):
             # TODO check if the account is as expected
@@ -21,7 +24,7 @@ class InvestecZaParser:
         vendor = fields["vendor"]
         date = datetime.strptime(fields["date"], "%d/%m/%Y")
         print(f"Fields extracted from mail: {fields}")
-        t = Transaction(date, vendor, amount)
+        t = Transaction(date, vendor, amount, self.account)
         print(f"Transaction is: {t}")
         return t
 

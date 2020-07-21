@@ -18,7 +18,7 @@ class MailToYnab:
         api_key = self.config['ynab_api_key']
         budget_id = self.config['ynab_budget']
         account_id = self.config['ynab_account']
-        self.ynab = YnabClient(api_key, budget_id, account_id)
+        self.ynab = YnabClient(api_key, budget_id)
 
         server = self.config['server']
         port = self.config['port']
@@ -27,7 +27,7 @@ class MailToYnab:
         self.mail = MailChecker(server, port, username, password)
 
         # First parser to successfully extract a notification will be used
-        self.parsers = [DiscoveryBankZaParser(), InvestecZaParser()]
+        self.parsers = [DiscoveryBankZaParser(account_id), InvestecZaParser(account_id)]
 
     def run(self):
         upload_count = 0

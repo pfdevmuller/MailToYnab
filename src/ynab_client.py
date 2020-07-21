@@ -4,10 +4,9 @@ from swagger_client.rest import ApiException
 
 class YnabClient:
 
-    def __init__(self, api_key, budget_id, account_id):
+    def __init__(self, api_key, budget_id):
         self.key = api_key
         self.budget = budget_id
-        self.account = account_id
         configuration = ynab.Configuration()
         configuration.api_key['Authorization'] = self.key
         configuration.api_key_prefix['Authorization'] = 'Bearer'
@@ -15,7 +14,7 @@ class YnabClient:
     def upload_transaction(self, transaction):
         wrapper = ynab.SaveTransactionsWrapper()
         wrapper.transaction = ynab.SaveTransaction(
-            account_id=self.account,
+            account_id=transaction.account,
             _date=transaction.ynab_date(),
             amount=transaction.amount,
             payee_name=transaction.vendor)
@@ -27,7 +26,7 @@ class YnabClient:
         try:
             since_date = transaction.ynab_date()
             resp = ynab.TransactionsApi().get_transactions_by_account(
-                self.budget, self.account, since_date=since_date)
+                self.budget, transaction.account, since_date=since_date)
             transactions = resp.data["transactions"]
             for t in transactions:
                 match = self.looks_like(transaction, t)
