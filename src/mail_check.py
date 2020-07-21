@@ -42,33 +42,32 @@ class MailChecker:
         self.username = username
         self.password = password
 
-    def get_client(self, server, port, username, password):
-        print(f"Server {server}, Port {port}")
-        server = IMAPClient(server, port=port, ssl=False)
-        server.login(username, password)
+    def get_client(self):
+        print(f"Server {self.server}, Port {self.port}")
+        server = IMAPClient(self.server, port=self.port, ssl=False)
+        server.login(self.username, self.password)
         return server
 
     def start_inbox_scan(self):
-        inbox = self.get_client(self.server, self.port,
-                                self.username, self.password)
+        inbox = self.get_client()
         print("Connected, I think")
         return InboxScan(inbox)
 
     def extract_text(self, parsed_email):
         # Try to find plain text first:
         for part in parsed_email.walk():
-            type = part.get_content_type()
-            if type == "text/plain":
+            content_type = part.get_content_type()
+            if content_type == "text/plain":
                 text = part.get_payload(decode=True)
                 print("\nFound plain text:")
                 print(text)
                 return text
         # Otherwise, look for text/html
         for part in parsed_email.walk():
-            type = part.get_content_type()
-            if type == "text/html":
+            content_type = part.get_content_type()
+            if content_type == "text/html":
                 text = part.get_payload(decode=True)
                 print("\nFound html text:")
                 print(text)
                 return text
-        raise "Could not find an understandable part in parsed email."
+        raise Exception("Could not find an understandable part in parsed email.")

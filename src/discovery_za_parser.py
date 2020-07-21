@@ -1,5 +1,5 @@
 import re
-from dateutil import parser as DateParser
+from dateutil import parser as dateparser
 from datetime import datetime
 from transaction import Transaction
 
@@ -19,7 +19,7 @@ class DiscoveryZaParser:
         fields = self.extract_groups(text)
         amount = int(round(float(fields["amount"]) * 1000))
         vendor = fields["vendor"]
-        year = DateParser.parse(message_date).year
+        year = dateparser.parse(message_date).year
         date_str = str(year) + " " + fields["date"]
         date = datetime.strptime(date_str, "%Y %d%b %H:%M")
         print(f"Fields extracted from mail: {fields}")

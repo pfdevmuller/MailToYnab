@@ -12,7 +12,7 @@ class YnabClient:
         configuration.api_key['Authorization'] = self.key
         configuration.api_key_prefix['Authorization'] = 'Bearer'
 
-    def uploadTransaction(self, transaction):
+    def upload_transaction(self, transaction):
         wrapper = ynab.SaveTransactionsWrapper()
         wrapper.transaction = ynab.SaveTransaction(
             account_id=self.account,
@@ -23,7 +23,7 @@ class YnabClient:
         ynab.TransactionsApi().create_transaction(wrapper, self.budget)
 
     # TODO this seems well worth testing
-    def isExisting(self, transaction):
+    def is_existing(self, transaction):
         try:
             since_date = transaction.ynab_date()
             resp = ynab.TransactionsApi().get_transactions_by_account(
@@ -37,19 +37,21 @@ class YnabClient:
             print("Exception %s\n" % e)
             raise e
 
-    def looks_like(self, transaction, ynab_transaction):
+    @staticmethod
+    def looks_like(transaction, ynab_transaction):
         t = transaction
         yt = ynab_transaction
         # print(f"Comparing {t} with {yt}")
         # Vendor names from statement are more complete than from
         # notifications, so we need to be a little lenient
-        isVendorSamey = ((t.vendor.lower() in yt["payee_name"].lower()) or
-                         (yt["payee_name"].lower() in t.vendor.lower()))
-        isDateSame = t.ynab_date() == yt["date"]
-        isAmountSame = t.amount == yt["amount"]
-        return isDateSame and isAmountSame and isVendorSamey
+        is_vendor_samey = ((t.vendor.lower() in yt["payee_name"].lower()) or
+                           (yt["payee_name"].lower() in t.vendor.lower()))
+        is_date_same = t.ynab_date() == yt["date"]
+        is_amount_same = t.amount == yt["amount"]
+        return is_date_same and is_amount_same and is_vendor_samey
 
-    def test_connection(self):
+    @staticmethod
+    def test_connection():
         budgets = ynab.BudgetsApi().get_budgets()
         print(f"Call made, result is: {budgets}")
 

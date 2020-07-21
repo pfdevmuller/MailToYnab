@@ -9,11 +9,11 @@ from investec_za_parser import InvestecZaParser
 
 class MailToYnab:
 
-    def __init__(self, config, dryrun=False):
+    def __init__(self, cfg, dryrun=False):
         self.dryrun = dryrun
         if self.dryrun:
             print("DRYRUN: No changes to YNAB or email will be made.")
-        self.config = config
+        self.config = cfg
 
         api_key = self.config['ynab_api_key']
         budget_id = self.config['ynab_budget']
@@ -46,8 +46,8 @@ class MailToYnab:
                     print("Looks like a notification")
                     msg_date = msg["Date"]
                     transaction = parser.get_transaction(text, msg_date)
-                    isKnown = self.ynab.isExisting(transaction)
-                    if (isKnown):
+                    is_known = self.ynab.is_existing(transaction)
+                    if is_known:
                         print("This transaction is known")
                         if self.dryrun:
                             print("DRYRUN: no email delete")
@@ -59,7 +59,7 @@ class MailToYnab:
                         if self.dryrun:
                             print("DRYRUN: no transaction upload")
                         else:
-                            self.ynab.uploadTransaction(transaction)
+                            self.ynab.upload_transaction(transaction)
                             upload_count += 1
             if not parsed:
                 print("Not what we are looking for")
@@ -77,7 +77,7 @@ class MailToYnab:
 
 
 def get_config_from_file(path):
-    config = {}
+    cfg = {}
     f = open(path, 'r')
     lines = f.readlines()
     for line in lines:
@@ -85,18 +85,18 @@ def get_config_from_file(path):
             continue
         tokens = line.split(':')
         if len(tokens) != 2:
-            raise "Expected config lines to contain exactly two fields"
+            raise Exception("Expected config lines to contain exactly two fields")
         key = tokens[0].strip()
         value = tokens[1].strip()
-        config[key] = value
-    return config
+        cfg[key] = value
+    return cfg
 
 
 def get_config_from_env():
     return os.environ
 
 
-if __name__ == "__main__":
+def local_handler():
     home = os.getenv("HOME")
     config_path = home + '/.mail_to_ynab'
     config = get_config_from_file(config_path)
@@ -107,7 +107,7 @@ if __name__ == "__main__":
     dryrun = "dryrun" in sys.argv
     mty = MailToYnab(config, dryrun)
     print(f"sys.argv: {sys.argv}")
-    if ("test-ynab" in sys.argv):
+    if "test-ynab" in sys.argv:
         mty.test_ynab()
     else:
         mty.run()
@@ -120,5 +120,9 @@ def lambda_handler(event, context):
     mty = MailToYnab(config, dryrun)
     result = mty.run()
     return {'message': result}
+
+
+if __name__ == "__main__":
+    local_handler()
 
 # import code; code.interact(local=dict(globals(), **locals()))
