@@ -1,3 +1,6 @@
+from datetime import timedelta
+
+
 class Transaction:
 
     def __init__(self, date, vendor, amount, account):
@@ -14,6 +17,9 @@ class Transaction:
 
     def ynab_date(self):
         return self.date.strftime("%Y-%m-%d")
+
+    def ynab_date_next_day(self):
+        return (self.date + timedelta(days=1)).strftime("%Y-%m-%d")
 
     def __eq__(self, other):
         return self.date == other.date and self.vendor == other.vendor and \

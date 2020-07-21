@@ -45,7 +45,7 @@ class YnabClient:
         # notifications, so we need to be a little lenient
         is_vendor_samey = ((t.vendor.lower() in yt["payee_name"].lower()) or
                            (yt["payee_name"].lower() in t.vendor.lower()))
-        is_date_same = t.ynab_date() == yt["date"]
+        is_date_same = t.ynab_date() == yt["date"] or t.ynab_date_next_day() == yt["date"]
         is_amount_same = t.amount == yt["amount"]
         return is_date_same and is_amount_same and is_vendor_samey
 
