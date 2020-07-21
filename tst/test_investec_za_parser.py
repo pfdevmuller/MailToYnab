@@ -31,3 +31,17 @@ class TestInvestecZaParser(TestCase):
         self.assertIsNotNone(transaction, "Expected transaction in response to matching text.")
         self.assertEqual(expectation, transaction)
 
+    def test_regex_bug_2020_07_21(self):
+        text = b"A purchase has been authorised on your Investec card ending 1234 for ZAR1,234.56 at PnP Crp Gardens on " \
+               b"01/06/2020.  Your available balance is R12,345.67."
+
+        parser = InvestecZaParser("account123", CardSuffixAccountMatcher("1234"))
+        transaction = parser.get_transaction(text, None)
+
+        expectation = Transaction(datetime(2020, 6, 1),
+                                  "PnP Crp Gardens",
+                                  -1234560,
+                                  "account123")
+
+        self.assertIsNotNone(transaction, "Expected transaction in response to matching text.")
+        self.assertEqual(expectation, transaction)
