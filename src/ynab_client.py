@@ -1,6 +1,8 @@
 import swagger_client as ynab
 from swagger_client.rest import ApiException
 
+DATE_LEEWAY = 1  # Transactions will match existing up to this many days later
+
 
 class YnabClient:
 
@@ -45,9 +47,19 @@ class YnabClient:
         # notifications, so we need to be a little lenient
         is_vendor_samey = ((t.vendor.lower() in yt["payee_name"].lower()) or
                            (yt["payee_name"].lower() in t.vendor.lower()))
-        is_date_same = t.ynab_date() == yt["date"] or t.ynab_date_next_day() == yt["date"]
+        is_date_same = YnabClient.dates_within_range(t, yt)
         is_amount_same = t.amount == yt["amount"]
         return is_date_same and is_amount_same and is_vendor_samey
+
+    @staticmethod
+    def dates_within_range(transaction, ynab_transaction):
+        # TODO rewrite with a cool map function and "in" check
+        ynab_date = ynab_transaction["date"]
+        for i in range(0, DATE_LEEWAY):
+            date = transaction.ynab_date_plus_days(i + 1)
+            if date == ynab_date:
+                return True
+        return False
 
     @staticmethod
     def test_connection():
