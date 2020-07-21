@@ -41,11 +41,10 @@ class MailToYnab:
                 if parsed:
                     # Only the first successful parser should be used
                     break
-                if parser.looks_like_notification(text):
+                transaction = parser.get_transaction(text, msg["Date"])
+                if transaction:
                     parsed = True
                     print("Looks like a notification")
-                    msg_date = msg["Date"]
-                    transaction = parser.get_transaction(text, msg_date)
                     is_known = self.ynab.is_existing(transaction)
                     if is_known:
                         print("This transaction is known")

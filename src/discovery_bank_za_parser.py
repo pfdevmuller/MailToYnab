@@ -14,25 +14,21 @@ class DiscoveryBankZaParser:
     def __init__(self, account):
         self.account = account
 
-    def looks_like_notification(self, text):
-        if self.extract_groups(text):
-            # TODO check if the account is as expected
-            return True
-        else:
-            return False
-
     def get_transaction(self, text, message_date):
         fields = self.extract_groups(text)
-        amount = (int(round(float(fields["amount"]) * 1000))
-                  * fields["amount_sign"])
-        vendor = fields["vendor"]
-        year = dateparser.parse(message_date).year
-        date_str = str(year) + " " + fields["date"]
-        date = datetime.strptime(date_str, "%Y %d %b %H:%M")
-        print(f"Fields extracted from mail: {fields}")
-        t = Transaction(date, vendor, amount, self.account)
-        print(f"Transaction is: {t}")
-        return t
+        if fields:
+            amount = (int(round(float(fields["amount"]) * 1000))
+                      * fields["amount_sign"])
+            vendor = fields["vendor"]
+            year = dateparser.parse(message_date).year
+            date_str = str(year) + " " + fields["date"]
+            date = datetime.strptime(date_str, "%Y %d %b %H:%M")
+            print(f"Fields extracted from mail: {fields}")
+            t = Transaction(date, vendor, amount, self.account)
+            print(f"Transaction is: {t}")
+            return t
+        else:
+            return None
 
     def extract_groups(self, text):
         # Sample:
