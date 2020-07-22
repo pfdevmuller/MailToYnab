@@ -1,5 +1,5 @@
 import re
-from dateutil import parser as DateParser
+from dateutil import parser as dateparser
 from datetime import datetime
 from transaction import Transaction
 
@@ -11,25 +11,26 @@ from transaction import Transaction
 # Discovery Credit Card provider
 class DiscoveryBankZaParser:
 
-    def looks_like_notification(self, text):
-        if self.extract_groups(text):
-            # TODO check if the account is as expected
-            return True
-        else:
-            return False
+    def __init__(self, account, account_matcher):
+        self.account = account
+        self.account_matcher = account_matcher
 
     def get_transaction(self, text, message_date):
         fields = self.extract_groups(text)
-        amount = (int(round(float(fields["amount"]) * 1000))
-                  * fields["amount_sign"])
-        vendor = fields["vendor"]
-        year = DateParser.parse(message_date).year
-        date_str = str(year) + " " + fields["date"]
-        date = datetime.strptime(date_str, "%Y %d %b %H:%M")
-        print(f"Fields extracted from mail: {fields}")
-        t = Transaction(date, vendor, amount)
-        print(f"Transaction is: {t}")
-        return t
+        if fields:
+            if self.account_matcher.matches(fields["card_suffix"]):
+                amount = (int(round(float(fields["amount"]) * 1000))
+                          * fields["amount_sign"])
+                vendor = fields["vendor"]
+                year = dateparser.parse(message_date).year
+                date_str = str(year) + " " + fields["date"]
+                date = datetime.strptime(date_str, "%Y %d %b %H:%M")
+                print(f"Fields extracted from mail: {fields}")
+                t = Transaction(date, vendor, amount, self.account)
+                print(f"Transaction is: {t}")
+                return t
+
+        return None
 
     def extract_groups(self, text):
         # Sample:
@@ -67,9 +68,7 @@ class DiscoveryBankZaParser:
                 groups = {
                     "amount": result.groups()[0],
                     "amount_sign": sign,
-                    # TODO: actually sometimes the last four digits of the
-                    # card, not the account
-                    "account": result.groups()[1],
+                    "card_suffix": result.groups()[0],
                     "vendor": result.groups()[2],
                     "date": result.groups()[3]}
                 return groups

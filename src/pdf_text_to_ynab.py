@@ -27,12 +27,12 @@ class PdfToYnab:
             for line in f:
                 transaction = self.get_transaction(line)
                 if transaction:
-                    isKnown = self.ynab.isExisting(transaction)
+                    isKnown = self.ynab.is_existing(transaction)
                     if (isKnown):
                         print("This transaction is known")
                     else:
                         print("This transaction is new!")
-                        self.ynab.uploadTransaction(transaction)
+                        self.ynab.upload_transaction(transaction)
                 else:
                     print("Not what we are looking for")
 
