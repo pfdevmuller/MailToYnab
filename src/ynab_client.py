@@ -56,7 +56,7 @@ class YnabClient:
         # TODO rewrite with a cool map function and "in" check
         ynab_date = ynab_transaction["date"]
         for i in range(0, DATE_LEEWAY):
-            date = transaction.ynab_date_plus_days(i + 1)
+            date = transaction.ynab_date_plus_days(i)
             if date == ynab_date:
                 return True
         return False
