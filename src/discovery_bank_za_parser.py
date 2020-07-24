@@ -68,7 +68,7 @@ class DiscoveryBankZaParser:
                 groups = {
                     "amount": result.groups()[0],
                     "amount_sign": sign,
-                    "card_suffix": result.groups()[0],
+                    "card_suffix": result.groups()[1],
                     "vendor": result.groups()[2],
                     "date": result.groups()[3]}
                 return groups
