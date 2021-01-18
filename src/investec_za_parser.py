@@ -31,7 +31,7 @@ class InvestecZaParser(object):
     def extract_groups(self, text):
         # Sample:
         # b"A purchase has been authorised on your Investec card ending 1234 for\r\nZAR5.00 at MTC CENTRE on 21/06/2019. Your available balance is\r\nR6,809.39." # noqa
-        pattern_authorised = r'A purchase has been authorised on your Investec card ending (\d+) for.*?ZAR([\d\.,]+) at (.+?) on ' \
+        pattern_authorised = r'A purchase has been authorised on your Investec card ending (\d+) for.*?(ZAR|NAD)([\d\.,]+) at (.+?) on ' \
                              r'(\d\d/\d\d/\d\d\d\d). +Your available balance '
 
         patterns = [pattern_authorised]
@@ -44,10 +44,10 @@ class InvestecZaParser(object):
             result = re.search(pattern, text)
             if result:
                 groups = {
-                    "amount": result.groups()[1],
+                    "amount": result.groups()[2],
                     "amount_sign": sign,
                     "card_suffix": result.groups()[0],
-                    "vendor": result.groups()[2],
-                    "date": result.groups()[3]}
+                    "vendor": result.groups()[3],
+                    "date": result.groups()[4]}
                 return groups
         return None
