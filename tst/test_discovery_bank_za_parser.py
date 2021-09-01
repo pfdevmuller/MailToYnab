@@ -16,16 +16,18 @@ class TestDiscoveryBankZaParser(TestCase):
         transaction = parser.get_transaction(text, None)
         self.assertIsNone(transaction, "Expected null in response to non matching text.")
 
+
     def test_get_transaction(self):
-        text = b"Discovery Bank: R5.00 reserved on card ***1234 at Vendor Name. 01 Dec 09:21. Available balance: R1234.56. For " \
-               b"more info, call 0860112265. "
+
+        text = b"Card Payment\r\n\r\nVendor Name - R 3 401.90\r\n\r\nFrom Credit Card\r\n\r\n" \
+               b"Card Ending ***1234\r\n\r\nSaturday 21 August at 11:32\r\n\r\nAvailable balance : R 12 345.67\r\n"
 
         parser = DiscoveryBankZaParser("account123", CardSuffixAccountMatcher("1234"))
-        transaction = parser.get_transaction(text, "2019/12/01")
+        transaction = parser.get_transaction(text, "2021/08/21")
 
-        expectation = Transaction(datetime(2019, 12, 1, 9, 21),
+        expectation = Transaction(datetime(2021, 8, 21, 11, 32),
                                   "Vendor Name",
-                                  -5000,
+                                  -3401900,
                                   "account123")
 
         self.assertIsNotNone(transaction, "Expected transaction in response to matching text.")
