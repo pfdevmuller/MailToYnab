@@ -33,11 +33,14 @@ class DiscoveryBankZaParser:
 
         return None
 
-    def extract_groups(self, text):
+    @staticmethod
+    def extract_groups(text):
+        text = text.replace('\r\n', ' ').replace('\n', ' ')
+        text = text.replace(u"–", '-')  # replace em dash
 
-        pattern_reserved = r"Card Payment  (.+?) - R([\d ]+\.\d\d)  " \
-            r"From Credit Card  Card Ending \*\*\*(\d+)  \w+" \
-            r" (\d+ \w+ at \d\d:\d\d)  Available balance"
+        pattern_reserved = r"Card payment (.+?) - R\xa0([\d ]+\.\d\d) " \
+                           r"From Credit Card Card ending \*\*\*(\d+) " \
+                           r"\w+, (\d+ \w+ at \d\d:\d\d)"
 
         # The phrase "reserved on card" can also be:
         #
@@ -56,9 +59,6 @@ class DiscoveryBankZaParser:
 
         patterns = [pattern_reserved, pattern_reversed, pattern_paid]
         amount_signs = [-1, 1, 1]
-
-        # TODO assumption about encoding
-        text = str(text, 'utf-8').replace('\r\n', ' ')
 
         for pattern, sign in zip(patterns, amount_signs):
             result = re.search(pattern, text, re.M)

@@ -1,4 +1,5 @@
 from imapclient import IMAPClient
+from bs4 import BeautifulSoup
 import email
 
 
@@ -54,20 +55,26 @@ class MailChecker:
         return InboxScan(inbox)
 
     def extract_text(self, parsed_email):
+        """
+        Returns a string representation of the email body
+        """
         # Try to find plain text first:
         for part in parsed_email.walk():
             content_type = part.get_content_type()
             if content_type == "text/plain":
                 text = part.get_payload(decode=True)
+                result = str(text, 'utf-8')
                 print("\nFound plain text:")
-                print(text)
-                return text
+                print(result)
+                return result
         # Otherwise, look for text/html
         for part in parsed_email.walk():
             content_type = part.get_content_type()
             if content_type == "text/html":
-                text = part.get_payload(decode=True)
+                text = str(part.get_payload(decode=True), 'utf-8')
+                soup = BeautifulSoup(text, features="html.parser")
+                result = soup.body.text
                 print("\nFound html text:")
-                print(text)
-                return text
+                print(result)
+                return result
         raise Exception("Could not find an understandable part in parsed email.")

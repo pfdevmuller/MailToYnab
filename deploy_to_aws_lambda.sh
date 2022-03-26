@@ -1,5 +1,5 @@
 # Parse config and set on lambda:
-configvars="$(python3 ./src/mail_to_ynab.py dump-config)"
+configvars="$(PYTHONPATH=./dependencies/ynab-v1/ python3 ./src/mail_to_ynab.py dump-config)"
 echo "$configvars"
 aws lambda update-function-configuration --function-name MailToYnab --environment "$configvars"
 
@@ -19,6 +19,7 @@ cp -R ./dependencies/ynab-v1/swagger_client ./build
 # Install Dependencies:
 pip install certifi -t ./build
 pip install imapclient -t ./build
+pip install beautifulsoup4 -t ./build
 
 # Zip it up:
 rm ./mailtoynab_lambda.zip

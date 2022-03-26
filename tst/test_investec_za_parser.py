@@ -13,7 +13,7 @@ class TestInvestecZaParser(TestCase):
                b"Your available balance is\r\nR6,809.39. "
 
         parser = InvestecZaParser("account123", CardSuffixAccountMatcher("1234"))
-        transaction = parser.get_transaction(text, None)
+        transaction = parser.get_transaction(str(text, 'utf-8'), None)
         self.assertIsNone(transaction, "Expected null in response to non matching text.")
 
     def test_get_transaction(self):
@@ -21,7 +21,7 @@ class TestInvestecZaParser(TestCase):
                b"Your available balance is\r\nR6,809.39. "
 
         parser = InvestecZaParser("account123", CardSuffixAccountMatcher("1234"))
-        transaction = parser.get_transaction(text, None)
+        transaction = parser.get_transaction(str(text, 'utf-8'), None)
 
         expectation = Transaction(datetime(2019, 6, 21),
                                   "MTC CENTRE",
@@ -36,7 +36,7 @@ class TestInvestecZaParser(TestCase):
                b"01/06/2020.  Your available balance is R12,345.67."
 
         parser = InvestecZaParser("account123", CardSuffixAccountMatcher("1234"))
-        transaction = parser.get_transaction(text, None)
+        transaction = parser.get_transaction(str(text, 'utf-8'), None)
 
         expectation = Transaction(datetime(2020, 6, 1),
                                   "PnP Crp Gardens",

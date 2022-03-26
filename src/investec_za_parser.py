@@ -28,7 +28,8 @@ class InvestecZaParser(object):
 
         return None
 
-    def extract_groups(self, text):
+    @staticmethod
+    def extract_groups(text):
         # Sample:
         # b"A purchase has been authorised on your Investec card ending 1234 for\r\nZAR5.00 at MTC CENTRE on 21/06/2019. Your available balance is\r\nR6,809.39." # noqa
         pattern_authorised = r'A purchase has been authorised on your Investec card ending (\d+) for.*?(ZAR|NAD)([\d\.,]+) at (.+?) on ' \
@@ -38,7 +39,7 @@ class InvestecZaParser(object):
         amount_signs = [-1]
 
         # TODO assumption about encoding
-        text = str(text, 'utf-8').replace('\r\n', ' ')
+        text = text.replace('\r\n', ' ')
 
         for pattern, sign in zip(patterns, amount_signs):
             result = re.search(pattern, text)

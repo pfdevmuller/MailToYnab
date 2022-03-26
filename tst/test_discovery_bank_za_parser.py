@@ -13,14 +13,12 @@ class TestDiscoveryBankZaParser(TestCase):
                b"R1234.56. For more info, call 0860112265. "
 
         parser = DiscoveryBankZaParser("account123", CardSuffixAccountMatcher("1234"))
-        transaction = parser.get_transaction(text, None)
+        transaction = parser.get_transaction(str(text, 'utf-8'), None)
         self.assertIsNone(transaction, "Expected null in response to non matching text.")
 
-
     def test_get_transaction(self):
-
-        text = b"Card Payment\r\n\r\nVendor Name - R 3 401.90\r\n\r\nFrom Credit Card\r\n\r\n" \
-               b"Card Ending ***1234\r\n\r\nSaturday 21 August at 11:32\r\n\r\nAvailable balance : R 12 345.67\r\n"
+        text = "Card payment\r\nVendor Name – R\xa03 401.90\r\nFrom Credit Card\r\nCard ending ***1234\r\n" \
+               "Saturday, 21 August at 11:32\r\nAvailable balance: R 12,345.67For more info, call 0800 07 96 97"
 
         parser = DiscoveryBankZaParser("account123", CardSuffixAccountMatcher("1234"))
         transaction = parser.get_transaction(text, "2021/08/21")
