@@ -19,7 +19,7 @@ class DiscoveryBankZaParser:
         fields = self.extract_groups(text)
         if fields:
             if self.account_matcher.matches(fields["card_suffix"]):
-                amount_str = fields["amount"].replace(' ', '')
+                amount_str = fields["amount"].replace(',', '')
                 amount = (int(round(float(amount_str) * 1000))
                           * fields["amount_sign"])
                 vendor = fields["vendor"]
@@ -38,7 +38,7 @@ class DiscoveryBankZaParser:
         text = text.replace('\r\n', ' ').replace('\n', ' ')
         text = text.replace(u"–", '-')  # replace em dash
 
-        pattern_reserved = r"Card payment (.+?) - R\xa0([\d ]+\.\d\d) " \
+        pattern_reserved = r"Card payment (.+?) - R\xa0([\d,]+\.\d\d) " \
                            r"From Credit Card Card ending \*\*\*(\d+) " \
                            r"\w+, (\d+ \w+ at \d\d:\d\d)"
 
