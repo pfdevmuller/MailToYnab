@@ -20,7 +20,7 @@ class InvestecZaParser(object):
                 amount = (int(round(float(amount_str) * 1000))
                           * fields["amount_sign"])
                 vendor = fields["vendor"]
-                date = datetime.strptime(fields["date"], "%d/%m/%Y")
+                date = datetime.strptime(fields["date"], "%d %B %Y")
                 print(f"Fields extracted from mail: {fields}")
                 t = Transaction(date, vendor, amount, self.account)
                 print(f"Transaction is: {t}")
@@ -32,8 +32,9 @@ class InvestecZaParser(object):
     def extract_groups(text):
         # Sample:
         # b"A purchase has been authorised on your Investec card ending 1234 for\r\nZAR5.00 at MTC CENTRE on 21/06/2019. Your available balance is\r\nR6,809.39." # noqa
-        pattern_authorised = r'A purchase has been authorised on your Investec card ending (\d+) for.*?(ZAR|NAD)([\d\.,]+) at (.+?) on ' \
-                             r'(\d\d/\d\d/\d\d\d\d). +Your available balance '
+        pattern_authorised = r'A purchase has been authorised on your Investec card ' \
+            r'ending (\d+) for (ZAR|NAD) ([\d\.,]+) at (.+?) on ' \
+            r'(\d\d \w+ \d\d\d\d). +Your available balance '
 
         patterns = [pattern_authorised]
         amount_signs = [-1]
